@@ -124,23 +124,17 @@ main > .panel:nth-of-type(even){
 	transition: background-color var(--transition);
 }
 
-/* Make each panel fill the viewport (account for sticky header height) */
 main > .panel{
-	min-height: calc(100vh - 68px);
-	display: flex;
-	align-items: center;
 	padding: 56px 0;
 }
 
 /* Ensure panel's container stretches so inner grids can form columns */
 main > .panel .container{
 	width: 100%;
-	flex: 1 1 auto;
 }
 
 @media (max-width:680px){
 	main > .panel{
-		min-height: calc(100vh - 58px);
 		padding: 40px 0;
 	}
 }

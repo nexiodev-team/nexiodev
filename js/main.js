@@ -58,20 +58,6 @@ document.addEventListener('DOMContentLoaded', function(){
     }));
   }
 
-  // smooth scroll for internal links
-  document.querySelectorAll('a[href^="#"]').forEach(a=>{
-    a.addEventListener('click', function(e){
-      const href = this.getAttribute('href');
-      if(href.length>1){
-        const target = document.querySelector(href);
-        if(target){
-          e.preventDefault();
-          target.scrollIntoView({behavior:'smooth',block:'start'});
-        }
-      }
-    });
-  });
-
   // simple contact form handler (placeholder)
   const form = document.querySelector('.contact-form');
   if (form) {
@@ -129,77 +115,3 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 });
-// Scroll effect (initialize after DOM ready)
-(function(){
-  if(!(window.gsap && gsap.utils && window.ScrollTrigger)){
-    console.warn('GSAP or ScrollTrigger not found — scroll snap disabled.');
-    return;
-  }
-
-  gsap.registerPlugin(ScrollTrigger);
-
-  let snapTrigger = null;
-  let resizeTimer = null;
-
-  function setupSnap(){
-    const panels = gsap.utils.toArray('.panel');
-    if(!panels.length) return;
-
-    if(snapTrigger && typeof snapTrigger.kill === 'function'){
-      snapTrigger.kill();
-      snapTrigger = null;
-    }
-
-    let isSnapping = false;
-    const headerOffset = document.querySelector('.site-header')?.offsetHeight || 0;
-
-    function snapHandler(){
-      if(isSnapping) return;
-      const panels = gsap.utils.toArray('.panel');
-      if(!panels.length) return;
-
-      const ratios = panels.map(p => {
-        const r = p.getBoundingClientRect();
-        const visible = Math.max(0, Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0));
-        return visible / (r.height || 1);
-      });
-
-      // find the most visible panel
-      let bestIndex = 0; let bestRatio = ratios[0] || 0;
-      for(let i=1;i<ratios.length;i++){ if(ratios[i] > bestRatio){ bestRatio = ratios[i]; bestIndex = i; } }
-
-      // check immediate neighbors: only auto-snap if a neighbor exceeds 10% visibility
-      const threshold = 0.25;
-      const prevIndex = bestIndex - 1;
-      const nextIndex = bestIndex + 1;
-      let targetIndex = null;
-      if(prevIndex >= 0 && ratios[prevIndex] >= threshold) targetIndex = prevIndex;
-      else if(nextIndex < panels.length && ratios[nextIndex] >= threshold) targetIndex = nextIndex;
-
-      if(targetIndex !== null){
-        const target = panels[targetIndex];
-        const targetTop = Math.max(0, target.offsetTop - headerOffset);
-        if(Math.abs(window.scrollY - targetTop) > 4){
-          isSnapping = true;
-          window.scrollTo({ top: targetTop, behavior: 'smooth' });
-          setTimeout(()=>{ isSnapping = false; }, 700);
-        }
-      }
-    }
-
-    // run snapHandler on scroll end
-    ScrollTrigger.addEventListener('scrollEnd', snapHandler);
-    // lightweight trigger so ScrollTrigger tracks scroll (can be killed on setup)
-    snapTrigger = ScrollTrigger.create({ trigger: panels[0], start: 'top top', end: 'bottom bottom' });
-  }
-
-  // initialize and refresh on resize with debounce
-  setupSnap();
-  window.addEventListener('resize', ()=>{
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(()=>{
-      setupSnap();
-      if(window.ScrollTrigger && typeof ScrollTrigger.refresh === 'function') ScrollTrigger.refresh();
-    },150);
-  });
-})();
